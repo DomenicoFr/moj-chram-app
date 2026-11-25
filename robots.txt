@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://domenicofr.github.io/moj-chram-app/sitemap.xml

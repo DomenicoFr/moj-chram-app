@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Môj chrám – aplikácia pre farnosti | oznamy a bohoslužby v mobile</title>
+<meta name="description" content="Môj chrám je bezplatná aplikácia pre farnosti na iPhone a Android. Oznamy, časy svätých omší a spovedania a upozornenia z vašej farnosti na jednom mieste. Bez reklám a bez účtu.">
+<link rel="canonical" href="https://domenicofr.github.io/moj-chram-app/">
+<meta name="theme-color" content="#F6F6F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121314" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="ikona.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Môj chrám – aplikácia pre farnosti">
+<meta property="og:description" content="Oznamy, bohoslužby a upozornenia z vašej farnosti na jednom mieste. Zadarmo a bez reklám.">
+<meta property="og:url" content="https://domenicofr.github.io/moj-chram-app/">
+<meta property="og:image" content="https://domenicofr.github.io/moj-chram-app/obrazky/ikona-512.png">
+<meta property="og:locale" content="sk_SK">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MobileApplication",
+  "name": "Môj chrám",
+  "operatingSystem": "iOS, Android",
+  "applicationCategory": "LifestyleApplication",
+  "inLanguage": "sk",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "url": "https://domenicofr.github.io/moj-chram-app/"
+}
+</script>
+<style>
+  /* Farby ako v appke (lib/ui/tema.dart) */
+  :root {
+    --bg: #F6F6F3;
+    --card: #FFFFFF;
+    --text: #1B2333;
+    --muted: #474F60;
+    --accent: #22427A;
+    --on-accent: #FFFFFF;
+    --gold: #8A6B12;
+    --gold-line: #B08D2E;
+    --tint: #EEF0F4;
+    --line: #DCE0E8;
+    --shadow: 0 1px 2px rgba(26, 34, 51, .06), 0 12px 32px -14px rgba(26, 34, 51, .22);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121314;
+      --card: #1E1F21;
+      --text: #ECEDEF;
+      --muted: #B7BABF;
+      --accent: #A7BEEA;
+      --on-accent: #121314;
+      --gold: #E0C06A;
+      --gold-line: #C9A23F;
+      --tint: #26282B;
+      --line: #34373B;
+      --shadow: 0 12px 32px -14px rgba(0, 0, 0, .7);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px; line-height: 1.6;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: var(--accent); }
+  a:focus-visible, .btn:focus-visible { outline: 3px solid var(--gold-line); outline-offset: 3px; border-radius: 8px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; }
+
+  /* Hlavička */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  header .wrap { display: flex; align-items: center; gap: 12px; height: 66px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 21px; letter-spacing: -.01em; }
+  .brand img { width: 38px; height: 38px; border-radius: 10px; }
+  nav { margin-left: auto; display: flex; gap: 24px; align-items: center; }
+  nav a { text-decoration: none; color: var(--muted); font-size: 16px; }
+  nav a:hover { color: var(--accent); }
+  @media (max-width: 720px) { nav a:not(.btn) { display: none; } }
+  .btn {
+    display: inline-block; background: var(--accent); color: var(--on-accent) !important;
+    padding: 10px 20px; border-radius: 999px; font-weight: 700; text-decoration: none; font-size: 16px;
+  }
+  .btn.ghost { background: transparent; color: var(--accent) !important; border: 1.5px solid var(--accent); }
+
+  /* Úvod */
+  .hero { padding: 72px 0 48px; }
+  .hero .wrap { display: grid; grid-template-columns: 1.15fr .85fr; gap: 56px; align-items: center; }
+  .eyebrow { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-size: 14px; font-weight: 700; margin: 0 0 14px; }
+  .eyebrow::after { content: ""; display: block; width: 44px; height: 3px; border-radius: 2px; background: var(--gold-line); margin-top: 12px; }
+  h1 { font-size: clamp(40px, 6.4vw, 68px); line-height: 1.04; letter-spacing: -.025em; margin: 0 0 20px; }
+  h1 span { color: var(--accent); }
+  .lead { font-size: 21px; color: var(--muted); margin: 0 0 28px; max-width: 32em; }
+  .soon {
+    display: inline-flex; align-items: center; gap: 10px; background: var(--card); box-shadow: var(--shadow);
+    border-radius: 999px; padding: 10px 20px 10px 14px; font-size: 17px; font-weight: 600;
+  }
+  .soon svg { width: 26px; height: 26px; flex: none; }
+  .ticks { list-style: none; padding: 0; margin: 26px 0 0; display: flex; flex-wrap: wrap; gap: 8px 22px; color: var(--muted); font-size: 16px; }
+  .ticks li::before { content: "✓"; color: var(--gold); font-weight: 700; margin-right: 6px; }
+  .phone {
+    width: min(320px, 78vw); margin: 0 auto; border-radius: 46px; padding: 10px;
+    background: #15181F; box-shadow: 0 32px 64px -28px rgba(20, 34, 66, .6);
+  }
+  .phone img { border-radius: 36px; }
+  @media (max-width: 820px) {
+    .hero { padding-top: 44px; }
+    .hero .wrap { grid-template-columns: 1fr; gap: 44px; text-align: center; }
+    .eyebrow::after { margin-left: auto; margin-right: auto; }
+    .lead { margin-left: auto; margin-right: auto; }
+    .ticks { justify-content: center; }
+  }
+
+  /* Časti */
+  section { padding: 60px 0; }
+  h2 { font-size: clamp(30px, 4.2vw, 42px); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 12px; }
+  .intro { color: var(--muted); max-width: 40em; margin: 0 0 34px; }
+
+  /* Funkcie */
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .feature { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 24px 22px 22px; }
+  .feature .ico { width: 52px; height: 52px; border-radius: 16px; background: var(--tint); display: grid; place-items: center; margin-bottom: 14px; }
+  .feature svg { width: 28px; height: 28px; }
+  .feature h3 { margin: 0 0 6px; font-size: 20px; }
+  .feature p { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.55; }
+  @media (max-width: 900px) { .features { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .features { grid-template-columns: 1fr; } }
+
+  /* Snímky */
+  .shots {
+    display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory;
+    padding: 6px 22px 24px; margin: 0 -22px; scrollbar-width: none;
+  }
+  .shots::-webkit-scrollbar { display: none; }
+  .shots figure { flex: 0 0 auto; width: 230px; margin: 0; scroll-snap-align: center; text-align: center; }
+  .shots .phone { width: 100%; border-radius: 34px; padding: 7px; }
+  .shots .phone img { border-radius: 28px; }
+  .shots figcaption { margin-top: 12px; color: var(--muted); font-size: 15px; }
+  @media (min-width: 1040px) { .shots { justify-content: center; } }
+
+  /* Pre farnosti */
+  .parish {
+    background: #22427A; color: #FFFFFF; border-radius: 32px; padding: 48px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;
+  }
+  .parish h2 { color: #FFFFFF; }
+  .parish .eyebrow { color: #F1D88A; }
+  .parish .eyebrow::after { background: #F1D88A; }
+  .parish p { color: #DCE4F3; margin: 0 0 24px; }
+  .parish ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+  .parish li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; color: #FFFFFF; }
+  .parish li svg { width: 26px; height: 26px; margin-top: 2px; }
+  .parish li span { color: #DCE4F3; display: block; font-size: 16px; }
+  .parish .btn { background: #FFFFFF; color: #22427A !important; }
+  .parish a:focus-visible { outline-color: #F1D88A; }
+  @media (max-width: 820px) { .parish { grid-template-columns: 1fr; padding: 32px 24px; gap: 28px; } }
+
+  /* Súkromie */
+  .privacy {
+    background: var(--card); border-radius: 28px; padding: 40px; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center;
+  }
+  .privacy svg { width: 72px; height: 72px; }
+  .privacy p { margin: 0 0 10px; color: var(--muted); }
+  .privacy p:last-child { margin: 0; }
+  @media (max-width: 640px) { .privacy { grid-template-columns: 1fr; padding: 28px 22px; } }
+
+  /* Rosario */
+  .sister {
+    border: 1px solid var(--line); border-radius: 28px; padding: 32px;
+    display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center;
+  }
+  .sister img { width: 84px; height: 84px; border-radius: 20px; box-shadow: var(--shadow); }
+  .sister h3 { margin: 0 0 4px; font-size: 24px; }
+  .sister p { margin: 0 0 16px; color: var(--muted); }
+  .sister .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ig { display: inline-flex; align-items: center; gap: 8px; }
+  .ig svg { width: 22px; height: 22px; padding: 3px; border-radius: 7px; color: #fff;
+    background: linear-gradient(45deg, #F9A825, #E1306C 55%, #833AB4); }
+  @media (max-width: 560px) { .sister { grid-template-columns: 1fr; padding: 26px 22px; } }
+
+  /* Päta */
+  footer { border-top: 1px solid var(--line); padding: 36px 0 48px; color: var(--muted); font-size: 15px; text-align: center; }
+  footer .links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; margin: 0 0 14px; padding: 0; list-style: none; }
+  footer .links a { text-decoration: none; font-weight: 700; white-space: nowrap; }
+  footer .links a:hover { text-decoration: underline; }
+  footer p { margin: 0; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="./"><img src="ikona.png" alt="" width="38" height="38">Môj chrám</a>
+    <nav>
+      <a href="#funkcie">Funkcie</a>
+      <a href="#farnosti">Pre farnosti</a>
+      <a href="#sukromie">Súkromie</a>
+      <a class="btn" href="#farnosti">Zapojiť farnosť</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Aplikácia pre farnosti</p>
+      <h1>Vaša farnosť <span>vždy po ruke</span></h1>
+      <p class="lead">Oznamy, časy svätých omší a spovedania a upozornenia z vašej farnosti na jednom mieste. Vyberiete si svoj kostol a appka vám dá vedieť, keď sa niečo zmení.</p>
+      <!-- Keď appka vyjde, sem prídu tlačidlá App Store a Google Play -->
+      <p class="soon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-line)" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Čoskoro v App Store a Google Play</p>
+      <ul class="ticks">
+        <li>Zadarmo</li>
+        <li>Bez reklám</li>
+        <li>Bez účtu</li>
+        <li>Pre rímskokatolícke aj gréckokatolícke farnosti</li>
+      </ul>
+    </div>
+    <div class="phone"><img src="obrazky/snimka-domov.jpg" alt="Domovská obrazovka appky Môj chrám s najbližšou svätou omšou a dlaždicami Oznamy, Bohoslužby, Spovedanie, Kostoly, Kontakt a V okolí" width="603" height="1311"></div>
+  </div>
+</section>
+
+<section id="funkcie">
+  <div class="wrap">
+    <h2>Všetko z farnosti v jednej appke</h2>
+    <p class="intro">Jednoduchá na ovládanie, s veľkým písmom a veľkými tlačidlami, aby sa v nej vyznal každý.</p>
+    <div class="features">
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/></svg></div>
+        <h3>Oznamy</h3>
+        <p>Farské oznamy hneď po zverejnení, prehľadne a s veľkým písmom.</p>
+      </div>
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+        <h3>Bohoslužby a spovedanie</h3>
+        <p>Časy svätých omší a liturgií na celý týždeň, úmysly a kedy sa spovedá.</p>
+      </div>
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></div>
+        <h3>Upozornenia</h3>
+        <p>Nový oznam, zmena omše alebo mimoriadna udalosť. Vyberiete si, čo chcete dostávať.</p>
+      </div>
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M10 4h4"/><path d="M12 6l-5 5v10h10V11z"/><path d="M7 14l-4 2v5h18v-5l-4-2"/></svg></div>
+        <h3>Kostoly a v okolí</h3>
+        <p>Viac farností naraz, napríklad doma aj u rodičov, a kde je najbližšia omša v okolí.</p>
+      </div>
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4z"/><path d="M9 9h6M9 12h4"/></svg></div>
+        <h3>Úmysly a otázky</h3>
+        <p>Požiadajte o úmysel svätej omše alebo sa opýtajte kňaza, ak to farnosť ponúka.</p>
+      </div>
+      <div class="feature">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 2 6 5.5"/></svg></div>
+        <h3>Podujatia a spoločenstvá</h3>
+        <p>Púte, stretnutia a správy pre miništrantov či zbor, s prihlásením priamo v appke.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Prehľadná a pokojná</h2>
+    <p class="intro">Písmo si zväčšíte podľa seba, večer môžete použiť tmavý režim a na ploche telefónu môžete mať widget s najbližšou omšou.</p>
+    <div class="shots">
+      <figure><div class="phone"><img src="obrazky/snimka-bohosluzby.jpg" alt="Bohoslužby na celý týždeň" loading="lazy" width="603" height="1311"></div><figcaption>Bohoslužby</figcaption></figure>
+      <figure><div class="phone"><img src="obrazky/snimka-oznamy.jpg" alt="Zoznam farských oznamov" loading="lazy" width="603" height="1311"></div><figcaption>Oznamy</figcaption></figure>
+      <figure><div class="phone"><img src="obrazky/snimka-oznam.jpg" alt="Otvorený farský oznam" loading="lazy" width="603" height="1311"></div><figcaption>Oznam</figcaption></figure>
+      <figure><div class="phone"><img src="obrazky/snimka-kontakt.jpg" alt="Kontakt na farský úrad a úradné hodiny" loading="lazy" width="603" height="1311"></div><figcaption>Kontakt</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="farnosti">
+  <div class="wrap">
+    <div class="parish">
+      <div>
+        <p class="eyebrow">Pre kňazov a farnosti</p>
+        <h2>Nič nemusíte písať dvakrát</h2>
+        <p>Appka si oznamy a program bohoslužieb zoberie z toho, čo už zverejňujete na webe alebo v PDF, samozrejme len s vaším súhlasom. Pre veriacich je zadarmo a bez reklám.</p>
+        <a class="btn" href="mailto:d_franka@icloud.com?subject=Môj%20chrám%20–%20zapojenie%20farnosti">Chcem zapojiť farnosť</a>
+      </div>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="#F1D88A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg><div><strong>Správa priamo v telefóne</strong><span>Oznam, zmena omše či upozornenie farníkom na pár ťuknutí.</span></div></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="#F1D88A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg><div><strong>Úmysly bez papierovania</strong><span>Žiadosti o úmysly na jednom mieste, milodar ide prevodom priamo na účet farnosti, bez poplatkov.</span></div></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="#F1D88A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg><div><strong>Kňaz, kaplán aj poverení farníci</strong><span>Každý dostane presne tie práva, ktoré mu kňaz pridelí.</span></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="sukromie">
+  <div class="wrap">
+    <div class="privacy">
+      <svg viewBox="0 0 48 48" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 4l16 6v12c0 10-7 18-16 22C15 40 8 32 8 22V10z"/><rect x="17" y="21" width="14" height="11" rx="2" stroke="var(--gold-line)"/><path d="M20 21v-3a4 4 0 0 1 8 0v3" stroke="var(--gold-line)"/></svg>
+      <div>
+        <h2>Bez účtu a bez sledovania</h2>
+        <p>Na čítanie oznamov a bohoslužieb sa nemusíte nikde prihlasovať. Vaše farnosti a nastavenia sú uložené len vo vašom telefóne. Žiadne reklamy a žiadne predávanie údajov.</p>
+        <p><a href="https://moj-chram.web.app/zasady-sukromia.html">Zásady ochrany súkromia</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sem neskôr príde časť „Podporiť vývoj“ (číslo účtu a QR kód) -->
+
+<section>
+  <div class="wrap">
+    <div class="sister">
+      <img src="obrazky/rosario.png" alt="Ikona aplikácie Rosario" width="84" height="84" loading="lazy">
+      <div>
+        <h3>Vyskúšajte aj Rosario</h3>
+        <p>Modlitebná appka od toho istého autora: svätý ruženec, novény, litánie a ďalšie modlitby. Zadarmo, bez reklám a funguje aj bez internetu.</p>
+        <div class="row">
+          <a class="btn" href="https://domenicofr.github.io/rosario-app/">Viac o Rosario</a>
+          <a class="btn ghost ig" href="https://www.instagram.com/rosarioappka/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>@rosarioappka</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <ul class="links">
+      <li><a href="mailto:d_franka@icloud.com">Kontakt</a></li>
+      <li><a href="https://moj-chram.web.app/zasady-sukromia.html">Zásady súkromia</a></li>
+      <li><a href="https://domenicofr.github.io/rosario-app/">Rosario</a></li>
+    </ul>
+    <p>© 2026 Môj chrám</p>
+  </div>
+</footer>
+
+</body>
+</html>
